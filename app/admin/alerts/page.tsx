@@ -1,30 +1,30 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Plus, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertBadge } from '@/components/alert-badge';
-import { Alert } from '@/app/types';
+import { useState } from "react";
+import { Plus, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertBadge } from "../../components/alert-badge";
+import { Alert } from "@/app/types";
 
 export default function AlertsPage() {
   const [alerts] = useState<Alert[]>([
     {
-      id: '1',
-      severity: 'red',
-      title: 'Severe Flooding in Downtown',
-      description: 'Multiple streets affected, immediate evacuation required',
+      id: "1",
+      severity: "red",
+      title: "Severe Flooding in Downtown",
+      description: "Multiple streets affected, immediate evacuation required",
       affectedAreas: [
         {
           center: { lat: 40.7128, lng: -74.006 },
           radius: 5,
-          name: 'Downtown Area',
+          name: "Downtown Area",
           population: 50000,
         },
       ],
       timestamp: new Date().toISOString(),
       isActive: true,
-      createdBy: 'admin',
+      createdBy: "admin",
       updates: [],
     },
   ]);
@@ -45,9 +45,9 @@ export default function AlertsPage() {
               <CardTitle className="text-xl font-semibold flex items-center gap-2">
                 <AlertTriangle
                   className={
-                    alert.severity === 'red'
-                      ? 'text-red-500'
-                      : 'text-yellow-500'
+                    alert.severity === "red"
+                      ? "text-red-500"
+                      : "text-yellow-500"
                   }
                 />
                 {alert.title}
@@ -58,7 +58,8 @@ export default function AlertsPage() {
               <p className="text-muted-foreground mb-4">{alert.description}</p>
               <div className="flex justify-between items-center text-sm">
                 <span>
-                  Affected Areas: {alert.affectedAreas.map((a) => a.name).join(', ')}
+                  Affected Areas:{" "}
+                  {alert.affectedAreas.map((a) => a.name).join(", ")}
                 </span>
                 <span className="text-muted-foreground">
                   {new Date(alert.timestamp).toLocaleString()}

@@ -1,64 +1,68 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Map, { Marker, Circle } from 'react-map-gl';
-import { Alert, Organization, Resource } from '@/app/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, Building2, Package } from 'lucide-react';
+import { useState } from "react";
+import Map, { Marker, Source, Layer, LayerProps } from "react-map-gl";
 
-const MAPBOX_TOKEN = 'YOUR_MAPBOX_TOKEN'; // Replace with your token
+import { Alert, Organization, Resource } from "@/app/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, Building2, Package } from "lucide-react";
+import * as turf from "@turf/turf";
+
+const MAPBOX_TOKEN = "YOUR_MAPBOX_TOKEN"; // Replace with your token
 
 export default function MapPage() {
   const [viewState, setViewState] = useState({
     latitude: 40.7128,
     longitude: -74.006,
-    zoom: 11
+    zoom: 11,
   });
 
   const [alerts] = useState<Alert[]>([
     {
-      id: '1',
-      severity: 'red',
-      title: 'Severe Flooding',
-      description: 'Downtown area affected',
-      affectedAreas: [{
-        center: { lat: 40.7128, lng: -74.006 },
-        radius: 5,
-        name: 'Downtown',
-        population: 50000
-      }],
+      id: "1",
+      severity: "red",
+      title: "Severe Flooding",
+      description: "Downtown area affected",
+      affectedAreas: [
+        {
+          center: { lat: 40.7128, lng: -74.006 },
+          radius: 5,
+          name: "Downtown",
+          population: 50000,
+        },
+      ],
       timestamp: new Date().toISOString(),
       isActive: true,
-      createdBy: 'admin',
-      updates: []
-    }
+      createdBy: "admin",
+      updates: [],
+    },
   ]);
 
   const [organizations] = useState<Organization[]>([
     {
-      id: '1',
-      name: 'City Hospital',
-      type: 'healthcare',
-      capabilities: ['Emergency Care'],
+      id: "1",
+      name: "City Hospital",
+      type: "healthcare",
+      capabilities: ["Emergency Care"],
       coverage: {
-        center: { lat: 40.7200, lng: -74.000 },
-        radius: 2
+        center: { lat: 40.72, lng: -74.0 },
+        radius: 2,
       },
-      status: 'active',
+      status: "active",
       contact: {
-        email: 'emergency@hospital.org',
-        phone: '555-0123',
-        emergency: '555-0911'
+        email: "emergency@hospital.org",
+        phone: "555-0123",
+        emergency: "555-0911",
       },
-      address: '123 Medical Dr',
+      address: "123 Medical Dr",
       operatingHours: {
-        start: '00:00',
-        end: '24:00',
-        timezone: 'UTC'
+        start: "00:00",
+        end: "24:00",
+        timezone: "UTC",
       },
       resources: [],
-      personnel: []
-    }
+      personnel: [],
+    },
   ]);
 
   return (
@@ -73,34 +77,63 @@ export default function MapPage() {
             <div className="h-[600px] w-full">
               <Map
                 {...viewState}
-                onMove={evt => setViewState(evt.viewState)}
+                onMove={(evt) => setViewState(evt.viewState)}
                 mapStyle="mapbox://styles/mapbox/dark-v11"
                 mapboxAccessToken={MAPBOX_TOKEN}
               >
-                {alerts.map(alert => (
-                  <Circle
-                    key={alert.id}
-                    center={[
-                      alert.affectedAreas[0].center.lng,
-                      alert.affectedAreas[0].center.lat
-                    ]}
-                    radius={alert.affectedAreas[0].radius * 1000}
-                    fillColor={
-                      alert.severity === 'red' ? '#ef444480' :
-                      alert.severity === 'orange' ? '#f9731680' :
-                      alert.severity === 'yellow' ? '#eab30880' :
-                      '#22c55e80'
-                    }
-                    strokeColor={
-                      alert.severity === 'red' ? '#ef4444' :
-                      alert.severity === 'orange' ? '#f97316' :
-                      alert.severity === 'yellow' ? '#eab308' :
-                      '#22c55e'
-                    }
-                  />
-                ))}
+                {alerts.map((alert) => {
+                  const center = [
+                    alert.affectedAreas[0].center.lng,
+                    alert.affectedAreas[0].center.lat,
+                  ];
 
-                {organizations.map(org => (
+                  // Generate a circle GeoJSON
+                  const circleGeoJSON = turf.circle(
+                    center,
+                    alert.affectedAreas[0].radius,
+                    {
+                      steps: 64,
+                      units: "kilometers",
+                    }
+                  );
+
+                  // Define correct circle style
+                  const circleLayer: LayerProps = {
+                    id: `circle-layer-${alert.id}`,
+                    type: "fill",
+                    paint: {
+                      "fill-color":
+                        alert.severity === "red"
+                          ? "#ef444480"
+                          : alert.severity === "orange"
+                          ? "#f9731680"
+                          : alert.severity === "yellow"
+                          ? "#eab30880"
+                          : "#22c55e80",
+                      "fill-opacity": 0.5,
+                      "fill-outline-color":
+                        alert.severity === "red"
+                          ? "#ef4444"
+                          : alert.severity === "orange"
+                          ? "#f97316"
+                          : alert.severity === "yellow"
+                          ? "#eab308"
+                          : "#22c55e",
+                    },
+                  };
+                  return (
+                    <Source
+                      key={alert.id}
+                      id={`circle-source-${alert.id}`}
+                      type="geojson"
+                      data={circleGeoJSON}
+                    >
+                      <Layer {...circleLayer} />
+                    </Source>
+                  );
+                })}
+
+                {organizations.map((org) => (
                   <Marker
                     key={org.id}
                     latitude={org.coverage.center.lat}
