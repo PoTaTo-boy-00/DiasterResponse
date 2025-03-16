@@ -20,6 +20,10 @@ export interface Alert {
   isActive: boolean;
   createdBy: string;
   updates: AlertUpdate[];
+  mediaUrls?: string[];
+  voiceTranscription?: string;
+  smsEnabled?: boolean;
+  ussdCode?: string;
 }
 
 export interface AlertUpdate {
@@ -28,6 +32,8 @@ export interface AlertUpdate {
   message: string;
   timestamp: string;
   userId: string;
+  mediaUrls?: string[];
+  location?: GeoLocation;
 }
 
 export interface Resource {
@@ -42,6 +48,14 @@ export interface Resource {
   lastUpdated: string;
   expiryDate?: string;
   conditions?: string[];
+  utilizationHistory?: ResourceUtilization[];
+}
+
+export interface ResourceUtilization {
+  timestamp: string;
+  quantity: number;
+  purpose: string;
+  alertId?: string;
 }
 
 export interface Organization {
@@ -67,6 +81,11 @@ export interface Organization {
   };
   resources: Resource[];
   personnel: Personnel[];
+  performanceMetrics?: {
+    responseTime: number;
+    resourceUtilization: number;
+    successRate: number;
+  };
 }
 
 export interface Personnel {
@@ -80,18 +99,25 @@ export interface Personnel {
     phone: string;
     email: string;
   };
+  deploymentHistory?: {
+    alertId: string;
+    startTime: string;
+    endTime?: string;
+    location: GeoLocation;
+  }[];
 }
 
 export interface Message {
   id: string;
   senderId: string;
   recipientId: string | null;
-  type: 'direct' | 'group' | 'broadcast';
+  type: 'direct' | 'group' | 'broadcast' | 'sms' | 'ussd';
   content: string;
   timestamp: string;
   priority: 'normal' | 'urgent' | 'emergency';
   status: 'sent' | 'delivered' | 'read';
   attachments?: Attachment[];
+  deliveryMethod?: 'internet' | 'sms' | 'ussd';
 }
 
 export interface Attachment {
@@ -100,6 +126,7 @@ export interface Attachment {
   url: string;
   name: string;
   size: number;
+  thumbnailUrl?: string;
 }
 
 export interface GeoLocation {
@@ -122,9 +149,31 @@ export interface AnalyticsData {
     deployedResources: number;
     activePersonnel: number;
     responseTime: number;
+    resourceUtilization: number;
   };
   trends: {
     timestamp: string;
     value: number;
   }[];
+  historicalData?: {
+    period: string;
+    metrics: Record<string, number>;
+  }[];
+}
+
+export interface Report {
+  id: string;
+  title: string;
+  type: 'incident' | 'resource' | 'performance' | 'custom';
+  dateRange: {
+    start: string;
+    end: string;
+  };
+  metrics: Record<string, number>;
+  charts: {
+    type: 'line' | 'bar' | 'pie';
+    data: any;
+    options: any;
+  }[];
+  exportFormat?: 'pdf' | 'csv';
 }
