@@ -1,51 +1,66 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Building2, Phone, Mail, MapPin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import { Building2, Phone, Mail, MapPin, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Organization } from "@/app/types";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Organization } from '@/app/types';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function OrganizationsPage() {
-  const [organizations] = useState<Organization[]>([
-    {
-      id: '1',
-      name: 'City General Hospital',
-      type: 'healthcare',
-      capabilities: ['Emergency Care', 'Trauma Center', 'Ambulance Service'],
-      coverage: {
-        center: { lat: 40.7128, lng: -74.006 },
-        radius: 10,
-      },
-      status: 'active',
-      contact: {
-        email: 'emergency@citygeneral.org',
-        phone: '+1-555-0123',
-        emergency: '+1-555-0911',
-      },
-      address: '123 Medical Center Blvd, City, State 12345',
-      operatingHours: {
-        start: '00:00',
-        end: '24:00',
-        timezone: 'America/New_York',
-      },
-      resources: [],
-      personnel: [],
-    },
-  ]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Load organizations from local storage on component mount
+  useEffect(() => {
+    const storedOrganizations = localStorage.getItem("organizations");
+    if (storedOrganizations) {
+      setOrganizations(JSON.parse(storedOrganizations));
+    }
+  }, []);
+
+  // Save organizations to local storage whenever the state changes
+  useEffect(() => {
+    localStorage.setItem("organizations", JSON.stringify(organizations));
+  }, [organizations]);
+
+  const handleAddOrganization = (newOrg: Organization) => {
+    setOrganizations((prev) => [...prev, newOrg]);
+    setIsDialogOpen(false); // Close the dialog after submission
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Organizations</h1>
-        <Button>
-          <Building2 className="mr-2 h-4 w-4" /> Add Organization
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Add Organization
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Organization</DialogTitle>
+            </DialogHeader>
+            <OrganizationForm onSubmit={handleAddOrganization} />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -56,11 +71,13 @@ export default function OrganizationsPage() {
                 <Building2 className="h-5 w-5" />
                 {org.name}
               </CardTitle>
-              <span className={`px-2 py-1 rounded-full text-sm ${
-                org.status === 'active'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-              }`}>
+              <span
+                className={`px-2 py-1 rounded-full text-sm ${
+                  org.status === "active"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                }`}
+              >
                 {org.status.charAt(0).toUpperCase() + org.status.slice(1)}
               </span>
             </CardHeader>
@@ -69,7 +86,7 @@ export default function OrganizationsPage() {
                 <p className="text-sm text-muted-foreground">Type</p>
                 <p className="font-medium capitalize">{org.type}</p>
               </div>
-              
+
               <div>
                 <p className="text-sm text-muted-foreground">Capabilities</p>
                 <div className="flex flex-wrap gap-2 mt-1">
@@ -104,5 +121,136 @@ export default function OrganizationsPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+// Form component for adding a new organization
+interface OrganizationFormProps {
+  onSubmit: (org: Organization) => void;
+}
+
+function OrganizationForm({ onSubmit }: OrganizationFormProps) {
+  const [formData, setFormData] = useState<Omit<Organization, "id">>({
+    name: "",
+    type: "healthcare",
+    capabilities: [],
+    coverage: {
+      center: { lat: 0, lng: 0 },
+      radius: 0,
+    },
+    status: "active",
+    contact: {
+      email: "",
+      phone: "",
+      emergency: "",
+    },
+    address: "",
+    operatingHours: {
+      start: "00:00",
+      end: "24:00",
+      timezone: "UTC",
+    },
+    resources: [],
+    personnel: [],
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newOrg: Organization = {
+      ...formData,
+      id: String(Math.random().toString(36).substr(2, 9)), // Generate a unique ID
+    };
+    onSubmit(newOrg);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label>Name</Label>
+        <Input
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
+        />
+      </div>
+
+      <div>
+        <Label>Type</Label>
+        <Select
+          value={formData.type}
+          onValueChange={(value) =>
+            setFormData({ ...formData, type: value as Organization["type"] })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="healthcare">Healthcare</SelectItem>
+            <SelectItem value="ngo">NGO</SelectItem>
+            <SelectItem value="essential">Essential</SelectItem>
+            <SelectItem value="infrastructure">Infrastructure</SelectItem>
+            <SelectItem value="community">Community</SelectItem>
+            <SelectItem value="private">Private</SelectItem>
+            <SelectItem value="specialized">Specialized</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label>Capabilities</Label>
+        <Input
+          value={formData.capabilities.join(", ")}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              capabilities: e.target.value.split(", "),
+            })
+          }
+          placeholder="Enter capabilities separated by commas"
+        />
+      </div>
+
+      <div>
+        <Label>Contact Email</Label>
+        <Input
+          value={formData.contact.email}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              contact: { ...formData.contact, email: e.target.value },
+            })
+          }
+          required
+        />
+      </div>
+
+      <div>
+        <Label>Contact Phone</Label>
+        <Input
+          value={formData.contact.phone}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              contact: { ...formData.contact, phone: e.target.value },
+            })
+          }
+          required
+        />
+      </div>
+
+      <div>
+        <Label>Address</Label>
+        <Input
+          value={formData.address}
+          onChange={(e) =>
+            setFormData({ ...formData, address: e.target.value })
+          }
+          required
+        />
+      </div>
+
+      <Button type="submit">Add Organization</Button>
+    </form>
   );
 }
