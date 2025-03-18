@@ -1,20 +1,29 @@
-'use client';
+"use client";
 
-import { Bell, Menu } from 'lucide-react';
-import { ThemeToggle } from './theme-toggle';
-import { Button } from '@/components/ui/button';
+import { Bell, Menu } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   return (
     <header className="border-b">
       <div className="flex h-16 items-center px-4">
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={onMenuClick}
+        >
           <Menu className="h-6 w-6" />
         </Button>
         <div className="ml-auto flex items-center space-x-4">

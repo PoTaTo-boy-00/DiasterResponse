@@ -1,13 +1,17 @@
-export type AlertSeverity = 'red' | 'orange' | 'yellow' | 'green';
+export type AlertSeverity = "red" | "orange" | "yellow" | "green";
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'partner';
+  role: "admin" | "partner";
   organizationId?: string;
   createdAt: string;
   lastLogin: string;
+}
+
+export interface AlertFormProps {
+  onSubmit: (alert: Alert) => void;
 }
 
 export interface Alert {
@@ -15,7 +19,7 @@ export interface Alert {
   severity: AlertSeverity;
   title: string;
   description: string;
-  affectedAreas: GeoArea[];
+  affected_Areas: GeoArea[];
   timestamp: string;
   isActive: boolean;
   createdBy: string;
@@ -38,12 +42,12 @@ export interface AlertUpdate {
 
 export interface Resource {
   id: string;
-  type: 'food' | 'medicine' | 'shelter' | 'equipment';
+  type: "food" | "medicine" | "shelter" | "equipment";
   name: string;
   quantity: number;
   unit: string;
   location: GeoLocation;
-  status: 'available' | 'allocated' | 'depleted';
+  status: "available" | "allocated" | "depleted";
   organizationId: string;
   lastUpdated: string;
   expiryDate?: string;
@@ -61,13 +65,20 @@ export interface ResourceUtilization {
 export interface Organization {
   id: string;
   name: string;
-  type: 'healthcare' | 'ngo' | 'essential' | 'infrastructure' | 'community' | 'private' | 'specialized';
+  type:
+    | "healthcare"
+    | "ngo"
+    | "essential"
+    | "infrastructure"
+    | "community"
+    | "private"
+    | "specialized";
   capabilities: string[];
   coverage: {
     center: GeoLocation;
     radius: number;
   };
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   contact: {
     email: string;
     phone: string;
@@ -92,7 +103,7 @@ export interface Personnel {
   id: string;
   name: string;
   role: string;
-  status: 'available' | 'deployed' | 'unavailable';
+  status: "available" | "deployed" | "unavailable";
   location?: GeoLocation;
   skills: string[];
   contact: {
@@ -111,18 +122,18 @@ export interface Message {
   id: string;
   senderId: string;
   recipientId: string | null;
-  type: 'direct' | 'group' | 'broadcast' | 'sms' | 'ussd';
+  type: "direct" | "group" | "broadcast" | "sms" | "ussd";
   content: string;
   timestamp: string;
-  priority: 'normal' | 'urgent' | 'emergency';
-  status: 'sent' | 'delivered' | 'read';
+  priority: "normal" | "urgent" | "emergency";
+  status: "sent" | "delivered" | "read";
   attachments?: Attachment[];
-  deliveryMethod?: 'internet' | 'sms' | 'ussd';
+  deliveryMethod?: "internet" | "sms" | "ussd";
 }
 
 export interface Attachment {
   id: string;
-  type: 'image' | 'document' | 'audio' | 'video';
+  type: "image" | "document" | "audio" | "video";
   url: string;
   name: string;
   size: number;
@@ -142,7 +153,7 @@ export interface GeoArea {
 }
 
 export interface AnalyticsData {
-  timeframe: 'day' | 'week' | 'month' | 'year';
+  timeframe: "day" | "week" | "month" | "year";
   metrics: {
     activeAlerts: number;
     resolvedAlerts: number;
@@ -164,16 +175,16 @@ export interface AnalyticsData {
 export interface Report {
   id: string;
   title: string;
-  type: 'incident' | 'resource' | 'performance' | 'custom';
+  type: "incident" | "resource" | "performance" | "custom";
   dateRange: {
     start: string;
     end: string;
   };
   metrics: Record<string, number>;
   charts: {
-    type: 'line' | 'bar' | 'pie';
+    type: "line" | "bar" | "pie";
     data: any;
     options: any;
   }[];
-  exportFormat?: 'pdf' | 'csv';
+  exportFormat?: "pdf" | "csv";
 }

@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Map, { Marker, Source, Layer, LayerProps } from "react-map-gl";
-
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Alert, Organization, Resource } from "@/app/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, Building2, Package } from "lucide-react";
 import * as turf from "@turf/turf";
 
-const MAPBOX_TOKEN = "YOUR_MAPBOX_TOKEN"; // Replace with your token
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 export default function MapPage() {
   const [viewState, setViewState] = useState({
@@ -17,53 +17,68 @@ export default function MapPage() {
     zoom: 11,
   });
 
-  const [alerts] = useState<Alert[]>([
-    {
-      id: "1",
-      severity: "red",
-      title: "Severe Flooding",
-      description: "Downtown area affected",
-      affectedAreas: [
-        {
-          center: { lat: 40.7128, lng: -74.006 },
-          radius: 5,
-          name: "Downtown",
-          population: 50000,
-        },
-      ],
-      timestamp: new Date().toISOString(),
-      isActive: true,
-      createdBy: "admin",
-      updates: [],
-    },
-  ]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
 
-  const [organizations] = useState<Organization[]>([
-    {
-      id: "1",
-      name: "City Hospital",
-      type: "healthcare",
-      capabilities: ["Emergency Care"],
-      coverage: {
-        center: { lat: 40.72, lng: -74.0 },
-        radius: 2,
-      },
-      status: "active",
-      contact: {
-        email: "emergency@hospital.org",
-        phone: "555-0123",
-        emergency: "555-0911",
-      },
-      address: "123 Medical Dr",
-      operatingHours: {
-        start: "00:00",
-        end: "24:00",
-        timezone: "UTC",
-      },
-      resources: [],
-      personnel: [],
-    },
-  ]);
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    async function fetchData() {
+      // Fetch alerts
+      const { data: alertsData } = await supabase
+        .from("alerts")
+        .select("*")
+        .eq("is_active", true);
+
+      if (alertsData) {
+        setAlerts(
+          alertsData.map((alert) => ({
+            ...alert,
+            affected_Areas: alert.affected_areas as any,
+          }))
+        );
+      }
+
+      // Fetch organizations
+      const { data: orgsData } = await supabase
+        .from("organizations")
+        .select("*")
+        .eq("status", "active");
+
+      if (orgsData) {
+        setOrganizations(
+          orgsData.map((org) => ({
+            ...org,
+            coverage: {
+              center: { lat: org.coverage_lat, lng: org.coverage_lng },
+              radius: org.coverage_radius,
+            },
+          }))
+        );
+      }
+
+      // Fetch resources
+      const { data: resourcesData } = await supabase
+        .from("resources")
+        .select("*")
+        .eq("status", "available");
+
+      if (resourcesData) {
+        setResources(
+          resourcesData.map((resource) => ({
+            ...resource,
+            location: {
+              lat: resource.location_lat,
+              lng: resource.location_lng,
+            },
+          }))
+        );
+      }
+    }
+
+    fetchData();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -83,21 +98,19 @@ export default function MapPage() {
               >
                 {alerts.map((alert) => {
                   const center = [
-                    alert.affectedAreas[0].center.lng,
-                    alert.affectedAreas[0].center.lat,
+                    alert.affected_Areas[0].center.lng,
+                    alert.affected_Areas[0].center.lat,
                   ];
 
-                  // Generate a circle GeoJSON
                   const circleGeoJSON = turf.circle(
                     center,
-                    alert.affectedAreas[0].radius,
+                    alert.affected_Areas[0].radius,
                     {
                       steps: 64,
                       units: "kilometers",
                     }
                   );
 
-                  // Define correct circle style
                   const circleLayer: LayerProps = {
                     id: `circle-layer-${alert.id}`,
                     type: "fill",
@@ -121,6 +134,7 @@ export default function MapPage() {
                           : "#22c55e",
                     },
                   };
+
                   return (
                     <Source
                       key={alert.id}
@@ -140,6 +154,16 @@ export default function MapPage() {
                     longitude={org.coverage.center.lng}
                   >
                     <Building2 className="h-6 w-6 text-primary" />
+                  </Marker>
+                ))}
+
+                {resources.map((resource) => (
+                  <Marker
+                    key={resource.id}
+                    latitude={resource.location.lat}
+                    longitude={resource.location.lng}
+                  >
+                    <Package className="h-6 w-6 text-primary" />
                   </Marker>
                 ))}
               </Map>
