@@ -1,7 +1,7 @@
 "use client";
 
 import { v4 as uuidv4 } from "uuid"; // Import the UUID library
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Plus, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,7 @@ import { supabase } from "@/lib/supabase";
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   useEffect(() => {
     const testSupabaseConnection = async () => {
       const { data, error } = await supabase
@@ -55,11 +56,30 @@ export default function AlertsPage() {
     fetchAlerts();
   }, []);
 
+  // Subscribe to realtime updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("alerts")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "alerts" },
+        (payload) => {
+          setAlerts((prev) => [...prev, payload.new as Alert]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const handleCreateAlert = async (newAlert: Alert) => {
     const { data, error } = await supabase
       .from("alerts")
       .insert([newAlert])
       .select();
+
     if (error) {
       console.error("Error creating alert:", error);
     } else {

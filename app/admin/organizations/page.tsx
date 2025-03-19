@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { Building2, Phone, Mail, MapPin, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,27 +22,51 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { supabase } from "@/lib/supabase";
 
 export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Load organizations from local storage on component mount
   useEffect(() => {
-    const storedOrganizations = localStorage.getItem("organizations");
-    if (storedOrganizations) {
-      setOrganizations(JSON.parse(storedOrganizations));
-    }
+    const testSupabaseConnection = async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("*")
+        .limit(1);
+      if (error) {
+        console.error("Supabase connection error:", error);
+      } else {
+        console.log("Supabase connection successful. Data:", data);
+      }
+    };
+
+    testSupabaseConnection();
+  }, []);
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      const { data, error } = await supabase.from("organizations").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setOrganizations(data);
+      }
+    };
+
+    fetchOrganizations();
   }, []);
 
-  // Save organizations to local storage whenever the state changes
-  useEffect(() => {
-    localStorage.setItem("organizations", JSON.stringify(organizations));
-  }, [organizations]);
-
-  const handleAddOrganization = (newOrg: Organization) => {
-    setOrganizations((prev) => [...prev, newOrg]);
-    setIsDialogOpen(false); // Close the dialog after submission
+  const handleAddOrganization = async (newOrganization: Organization) => {
+    const { data, error } = await supabase
+      .from("organizations")
+      .insert([newOrganization])
+      .select();
+    if (error) {
+      console.error("Error creating alert:", error);
+    } else {
+      setOrganizations((prev) => [...prev, data[0]]);
+      setIsDialogOpen(false);
+    }
   };
 
   return (
@@ -158,7 +183,7 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
     e.preventDefault();
     const newOrg: Organization = {
       ...formData,
-      id: String(Math.random().toString(36).substr(2, 9)), // Generate a unique ID
+      id: uuidv4(), // Generate a unique ID
     };
     onSubmit(newOrg);
   };
