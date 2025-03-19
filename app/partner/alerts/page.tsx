@@ -1,50 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertBadge } from "../../components/alert-badge";
 import { Alert } from "@/app/types";
 
+import { supabase } from "@/lib/supabase";
 export default function AlertsPage() {
-  const [alerts] = useState<Alert[]>([
-    {
-      id: "1",
-      severity: "red",
-      title: "Severe Flooding in Downtown",
-      description: "Multiple streets affected, immediate evacuation required",
-      affected_Areas: [
-        {
-          center: { lat: 40.7128, lng: -74.006 },
-          radius: 5,
-          name: "Downtown Area",
-          population: 50000,
-        },
-      ],
-      timestamp: new Date().toISOString(),
-      isActive: true,
-      createdBy: "admin",
-      updates: [],
-    },
-    {
-      id: "2",
-      severity: "orange",
-      title: "High Wind Warning",
-      description: "Strong winds expected, secure loose objects",
-      affected_Areas: [
-        {
-          center: { lat: 40.7128, lng: -74.006 },
-          radius: 10,
-          name: "Metropolitan Area",
-          population: 100000,
-        },
-      ],
-      timestamp: new Date().toISOString(),
-      isActive: true,
-      createdBy: "admin",
-      updates: [],
-    },
-  ]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      const { data, error } = await supabase.from("alerts").select("*");
+
+      if (error) {
+        console.error("Error fetching alerts:", error.message);
+      } else {
+        setAlerts(data || []);
+      }
+    };
+
+    fetchAlerts();
+
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel("alerts")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "alerts" },
+        (payload) => {
+          setAlerts((prev) => [...prev, payload.new as Alert]);
+        }
+      )
+      .subscribe();
+
+    // Cleanup function to remove the subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <div className="space-y-6">

@@ -1,5 +1,6 @@
 "use client";
 
+import { v4 as uuidv4 } from "uuid";
 import { useState, useEffect } from "react";
 import { Package, ArrowUpDown, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,27 +22,51 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { supabase } from "@/lib/supabase";
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Load resources from local storage on component mount
   useEffect(() => {
-    const storedResources = localStorage.getItem("resources");
-    if (storedResources) {
-      setResources(JSON.parse(storedResources));
-    }
+    const testSupabaseConnection = async () => {
+      const { data, error } = await supabase
+        .from("resources")
+        .select("*")
+        .limit(1);
+      if (error) {
+        console.error("Supabase connection error:", error);
+      } else {
+        console.log("Supabase connection successful. Data:", data);
+      }
+    };
+
+    testSupabaseConnection();
+  }, []);
+  useEffect(() => {
+    const fetchResources = async () => {
+      const { data, error } = await supabase.from("resources").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setResources(data);
+      }
+    };
+
+    fetchResources();
   }, []);
 
-  // Save resources to local storage whenever the state changes
-  useEffect(() => {
-    localStorage.setItem("resources", JSON.stringify(resources));
-  }, [resources]);
-
-  const handleAddResource = (newResource: Resource) => {
-    setResources((prev) => [...prev, newResource]);
-    setIsDialogOpen(false); // Close the dialog after submission
+  const handleAddResource = async (newResource: Resource) => {
+    const { data, error } = await supabase
+      .from("resources")
+      .insert([newResource])
+      .select();
+    if (error) {
+      console.error("Error creating alert:", error);
+    } else {
+      setResources((prev) => [...prev, data[0]]);
+      setIsDialogOpen(false);
+    }
   };
 
   return (
@@ -155,7 +180,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
     e.preventDefault();
     const newResource: Resource = {
       ...formData,
-      id: String(Math.random().toString(36).substr(2, 9)), // Generate a unique ID
+      id: uuidv4(), // Generate a unique ID
       lastUpdated: new Date().toISOString(),
     };
     onSubmit(newResource);

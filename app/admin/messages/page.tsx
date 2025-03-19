@@ -1,5 +1,6 @@
 "use client";
 
+import { v4 as uuidv4 } from "uuid";
 import { useState, useEffect } from "react";
 import { Send, MessageSquare, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,27 +22,51 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/lib/supabase";
 
 export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Load messages from local storage on component mount
   useEffect(() => {
-    const storedMessages = localStorage.getItem("messages");
-    if (storedMessages) {
-      setMessages(JSON.parse(storedMessages));
-    }
+    const testSupabaseConnection = async () => {
+      const { data, error } = await supabase
+        .from("alerts")
+        .select("*")
+        .limit(1);
+      if (error) {
+        console.error("Supabase connection error:", error);
+      } else {
+        console.log("Supabase connection successful. Data:", data);
+      }
+    };
+
+    testSupabaseConnection();
+  }, []);
+  useEffect(() => {
+    const fetchMessages = async () => {
+      const { data, error } = await supabase.from("messages").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setMessages(data);
+      }
+    };
+
+    fetchMessages();
   }, []);
 
-  // Save messages to local storage whenever the state changes
-  useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(messages));
-  }, [messages]);
-
-  const handleSendMessage = (newMessage: Message) => {
-    setMessages((prev) => [...prev, newMessage]);
-    setIsDialogOpen(false); // Close the dialog after submission
+  const handleSendMessage = async (newMessage: Message) => {
+    const { data, error } = await supabase
+      .from("messages")
+      .insert([newMessage])
+      .select();
+    if (error) {
+      console.error("Error creating alert:", error);
+    } else {
+      setMessages((prev) => [...prev, data[0]]);
+      setIsDialogOpen(false);
+    }
   };
 
   return (
@@ -133,7 +158,7 @@ function MessageForm({ onSubmit }: MessageFormProps) {
     e.preventDefault();
     const newMessage: Message = {
       ...formData,
-      id: String(Math.random().toString(36).substr(2, 9)), // Generate a unique ID
+      id: uuidv4(), // Generate a unique ID
       timestamp: new Date().toISOString(),
       status: "sent", // Default status
     };
