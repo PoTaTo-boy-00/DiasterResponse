@@ -70,7 +70,7 @@ export default function AdminDashboard() {
       disasterType: "Flood",
       probability: 0.75,
       severity: "High",
-      expectedAreas: ["Downtown", "Riverside"],
+      expectedAreas: ["Jalpaiguri", "Siliguri"],
       recommendedActions: [
         "Pre-position emergency response teams",
         "Alert healthcare facilities",
