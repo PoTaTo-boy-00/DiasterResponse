@@ -188,3 +188,50 @@ export interface Report {
   }[];
   exportFormat?: "pdf" | "csv";
 }
+export interface DiasterPrediction {
+  disasterType: string;
+  probability: number;
+  severity: string;
+  expectedAreas: string[];
+  recommendedActions: string[];
+}
+export interface ResourceAllocation {
+  date: string;
+  allocated: number;
+}
+export interface AdminDashboardProps {
+  user: User;
+}
+export interface OptimizedAllocation {
+  recommendation: string;
+  // allocation: ResourceAllocation[];
+  suggestions: string[];
+}
+export interface PersonnelLocation {
+  id: string;
+  personnel_id: string;
+  organization_id: string;
+  location_lat: number;
+  location_lng: number;
+  status: string;
+  last_updated: string;
+  personnel: {
+    name: string;
+    role: string;
+  };
+}
+
+export interface SOSAlert {
+  id: string;
+  personnel_id: string;
+  organization_id: string;
+  location_lat: number;
+  location_lng: number;
+  status: string;
+  description: string | null;
+  created_at: string;
+  personnel: {
+    name: string;
+    role: string;
+  };
+}
