@@ -2,12 +2,107 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertBadge } from "../components/alert-badge";
-import { Activity, AlertTriangle, Box, Users } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  Box,
+  Users,
+  MapPin,
+  AlertCircle,
+} from "lucide-react";
+import Map, { Marker } from "react-map-gl";
 import { useEffect, useState } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/lib/supabase";
+
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { PersonnelLocation, SOSAlert } from "../types";
+import MapComponent from "@/components/ui/MapComponent";
 
 export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
+  // const [personnel, setPersonnel] = useState<PersonnelLocation[]>([]);
+  // const [sosAlerts, setSosAlerts] = useState<SOSAlert[]>([]);
+  const supabase = createClientComponentClient();
+  const personnel = [
+    {
+      id: 1,
+      location_lat: 26.544205506857356,
+      location_lng: 88.70577006096832,
+    }, // Jalpaiguri
+  ];
+
+  const sosAlerts = [
+    { id: 1, location_lat: 26.54, location_lng: 88.71 }, // Near Jalpaiguri
+  ];
+
+  //   const fetchData = async () => {
+  //     // Fetch personnel locations
+  //     const { data: personnelData } = await supabase
+  //       .from("personnel_locations")
+  //       .select(
+  //         `
+  //         *,
+  //         personnel:personnel_id(name, role)
+  //       `
+  //       )
+  //       .eq("status", "active");
+
+  //     if (personnelData) {
+  //       setPersonnel(personnelData);
+  //     }
+
+  //     // Fetch SOS alerts
+  //     const { data: sosData } = await supabase
+  //       .from("sos_alerts")
+  //       .select(
+  //         `
+  //         *,
+  //         personnel:personnel_id(name, role)
+  //       `
+  //       )
+  //       .eq("status", "active");
+
+  //     if (sosData) {
+  //       setSosAlerts(sosData);
+  //     }
+  //   };
+
+  //   fetchData();
+
+  //   // Set up real-time subscriptions
+  //   const personnelSubscription = supabase
+  //     .channel("personnel-locations")
+  //     .on(
+  //       "postgres_changes",
+  //       {
+  //         event: "*",
+  //         schema: "public",
+  //         table: "personnel_locations",
+  //       },
+  //       fetchData
+  //     )
+  //     .subscribe();
+
+  //   const sosSubscription = supabase
+  //     .channel("sos-alerts")
+  //     .on(
+  //       "postgres_changes",
+  //       {
+  //         event: "*",
+  //         schema: "public",
+  //         table: "sos_alerts",
+  //       },
+  //       fetchData
+  //     )
+  //     .subscribe();
+
+  //   return () => {
+  //     supabase.removeChannel(personnelSubscription);
+  //     supabase.removeChannel(sosSubscription);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -82,8 +177,8 @@ export default function PartnerDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Additional dashboard content will be added here */}
+      <MapComponent personnel={personnel} sosAlerts={sosAlerts} />
+      <div></div>
     </div>
   );
 }

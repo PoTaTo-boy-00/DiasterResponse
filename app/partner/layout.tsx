@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Header } from "../components/header";
-import { Sidebar } from "../components/sidebar";
-// import { Sidebar } from "../components/partner-sidebar";
+// import { Sidebar } from "../components/sidebar";
+import { Sidebar } from "../components/partner-sidebar";
 
 export default function PartnerLayout({
   children,
