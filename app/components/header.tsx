@@ -26,7 +26,9 @@ export function Header({ onMenuClick }: HeaderProps) {
         >
           <Menu className="h-6 w-6" />
         </Button>
-        <div className="text-2xl font-bold md:text-center">Trayana</div>
+        <div className="text-4xl text-red-600 font-[emoji] tracking-[.12em] font-bold md:text-center ">
+          त्रyana
+        </div>
         <div className="ml-auto flex items-center space-x-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

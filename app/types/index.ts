@@ -55,6 +55,31 @@ export interface Resource {
   utilizationHistory?: ResourceUtilization[];
 }
 
+export interface allocateResource {
+  id: string;
+  resource: Resource[];
+  allocatedTo: string;
+  quantityAllocated: number;
+  allocationDate: string;
+  status: "pending" | "approved" | "rejected";
+  lastUpdated: string;
+}
+
+export interface requestResources {
+  id: string;
+  type: "food" | "medicine" | "shelter" | "equipment";
+  name: string;
+  quantity: number;
+  unit: string;
+  location: GeoLocation;
+  status: "requested" | "allocated" | "depleted";
+  organizationId: string;
+  lastUpdated: string;
+  expiryDate?: string;
+  conditions?: string[];
+  utilizationHistory?: ResourceUtilization[];
+}
+
 export interface ResourceUtilization {
   timestamp: string;
   quantity: number;
@@ -116,6 +141,7 @@ export interface Personnel {
     endTime?: string;
     location: GeoLocation;
   }[];
+  timestamp: string;
 }
 
 export interface Message {

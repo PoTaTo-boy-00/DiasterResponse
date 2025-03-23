@@ -1,28 +1,23 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Phone, Send } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Phone, Send } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface SMSAlertSystemProps {
   onSend: (message: string, recipients: string[]) => void;
 }
 
 export function SMSAlertSystem({ onSend }: SMSAlertSystemProps) {
-  const [message, setMessage] = useState('');
-  const [recipients, setRecipients] = useState('');
+  const [message, setMessage] = useState("");
+  const [recipients, setRecipients] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const recipientList = recipients.split(',').map(r => r.trim());
+    const recipientList = recipients.split(",").map((r) => r.trim());
     onSend(message, recipientList);
   };
 
@@ -37,7 +32,9 @@ export function SMSAlertSystem({ onSend }: SMSAlertSystemProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Recipients (comma-separated)</label>
+            <label className="text-sm font-medium">
+              Recipients (comma-separated)
+            </label>
             <Input
               value={recipients}
               onChange={(e) => setRecipients(e.target.value)}
