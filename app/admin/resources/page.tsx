@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Package, ArrowUpDown, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Resource } from "@/app/types";
+import { requestResources, Resource } from "@/app/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -26,23 +26,11 @@ import { supabase } from "@/lib/supabase";
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([]);
+  const [requestResource, setRequestResources] = useState<requestResources[]>(
+    []
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    const testSupabaseConnection = async () => {
-      const { data, error } = await supabase
-        .from("resources")
-        .select("*")
-        .limit(1);
-      if (error) {
-        console.error("Supabase connection error:", error);
-      } else {
-        console.log("Supabase connection successful. Data:", data);
-      }
-    };
-
-    testSupabaseConnection();
-  }, []);
   useEffect(() => {
     const fetchResources = async () => {
       const { data, error } = await supabase.from("resources").select("*");
@@ -55,7 +43,20 @@ export default function ResourcesPage() {
 
     fetchResources();
   }, []);
+  useEffect(() => {
+    const fetchResources = async () => {
+      const { data, error } = await supabase
+        .from("requestresources")
+        .select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setRequestResources(data);
+      }
+    };
 
+    fetchResources();
+  }, []);
   const handleAddResource = async (newResource: Resource) => {
     const { data, error } = await supabase
       .from("resources")
@@ -77,6 +78,7 @@ export default function ResourcesPage() {
           <Button variant="outline">
             <Filter className="mr-2 h-4 w-4" /> Filter
           </Button>
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -87,6 +89,7 @@ export default function ResourcesPage() {
               <DialogHeader>
                 <DialogTitle>Add New Resource</DialogTitle>
               </DialogHeader>
+
               <ResourceForm onSubmit={handleAddResource} />
             </DialogContent>
           </Dialog>
@@ -126,6 +129,83 @@ export default function ResourcesPage() {
                     {resource.quantity} {resource.unit}
                   </p>
                 </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Location</p>
+                  <p className="font-medium">
+                    {resource.location.lat}, {resource.location.lng}
+                  </p>
+                </div>
+
+                {resource.conditions && (
+                  <div className="col-span-2">
+                    <p className="text-sm text-muted-foreground">Conditions</p>
+                    <div className="flex gap-2 mt-1">
+                      {resource.conditions.map((condition) => (
+                        <span
+                          key={condition}
+                          className="px-2 py-1 bg-secondary rounded-full text-xs"
+                        >
+                          {condition}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {resource.expiryDate && (
+                  <div className="col-span-2">
+                    <p className="text-sm text-muted-foreground">Expiry Date</p>
+                    <p className="font-medium">{resource.expiryDate}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <div>Requested Resources</div>
+      <div className="grid gap-4">
+        {requestResource.map((resource) => (
+          <Card key={resource.id}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                {resource.name}
+              </CardTitle>
+              <span
+                className={`px-2 py-1 rounded-full text-sm ${
+                  resource.status === "requested"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                    : resource.status === "allocated"
+                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                }`}
+              >
+                {resource.status.charAt(0).toUpperCase() +
+                  resource.status.slice(1)}
+              </span>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="font-medium">{resource.type}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Quantity</p>
+                  <p className="font-medium">
+                    {resource.quantity} {resource.unit}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Location</p>
+                  <p className="font-medium">
+                    {resource.location.lat}, {resource.location.lng}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="font-medium">{resource.status}</p>
+                </div>
                 {resource.conditions && (
                   <div className="col-span-2">
                     <p className="text-sm text-muted-foreground">Conditions</p>
@@ -159,6 +239,9 @@ export default function ResourcesPage() {
 // Form component for adding a new resource
 interface ResourceFormProps {
   onSubmit: (resource: Resource) => void;
+}
+interface RequestResourceFormProps {
+  onSubmit: (resource: requestResources) => void;
 }
 
 function ResourceForm({ onSubmit }: ResourceFormProps) {

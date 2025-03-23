@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
+
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -86,6 +87,10 @@ export default function AlertsPage() {
       setAlerts((prev) => [...prev, data[0]]);
       setIsDialogOpen(false);
     }
+  };
+  const msg = {
+    message: "Alert Created",
+    phone: ["+2348130000000"],
   };
 
   return (

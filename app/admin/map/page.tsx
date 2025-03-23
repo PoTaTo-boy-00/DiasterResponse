@@ -7,8 +7,7 @@ import { Alert, Organization, Resource } from "@/app/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, Building2, Package } from "lucide-react";
 import * as turf from "@turf/turf";
-
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+import MapComponent from "@/components/ui/MapComponent";
 
 export default function MapPage() {
   const [viewState, setViewState] = useState({
@@ -22,6 +21,18 @@ export default function MapPage() {
   const [resources, setResources] = useState<Resource[]>([]);
 
   const supabase = createClientComponentClient();
+
+  const personnel = [
+    {
+      id: 1,
+      location_lat: 26.544205506857356,
+      location_lng: 88.70577006096832,
+    }, // Jalpaiguri
+  ];
+
+  const sosAlerts = [
+    { id: 1, location_lat: 26.54, location_lng: 88.71 }, // Near Jalpaiguri
+  ];
 
   useEffect(() => {
     async function fetchData() {
@@ -90,12 +101,8 @@ export default function MapPage() {
         <Card className="md:col-span-3">
           <CardContent className="p-0">
             <div className="h-[600px] w-full">
-              <Map
-                {...viewState}
-                onMove={(evt) => setViewState(evt.viewState)}
-                mapStyle="mapbox://styles/mapbox/dark-v11"
-                mapboxAccessToken={MAPBOX_TOKEN}
-              >
+              <MapComponent personnel={personnel} sosAlerts={sosAlerts} />
+              <Map>
                 {alerts.map((alert) => {
                   const center = [
                     alert.affected_Areas[0].center.lng,

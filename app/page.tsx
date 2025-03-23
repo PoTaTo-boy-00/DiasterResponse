@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield } from 'lucide-react';
-import Link from 'next/link';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Shield } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -9,19 +9,17 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         <div className="flex flex-col items-center text-center space-y-8">
           <Shield className="h-16 w-16 text-primary" />
-          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-            Disaster Response Network
+          <h1 className="text-4xl font-[emoji] text-red-600 tracking-[0.1em] font-bold sm:text-6xl">
+            त्रyana
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl">
-            A comprehensive platform connecting government agencies and partner organizations
-            for effective disaster response coordination.
+            A comprehensive platform connecting government agencies and partner
+            organizations for effective disaster response coordination.
           </p>
-          
+
           <div className="flex gap-4">
             <Link href="/admin">
-              <Button size="lg">
-                Admin Dashboard
-              </Button>
+              <Button size="lg">Admin Dashboard</Button>
             </Link>
             <Link href="/partner">
               <Button size="lg" variant="outline">
@@ -38,8 +36,8 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Color-coded severity levels for immediate response with location-based
-                notifications and resource allocation.
+                Color-coded severity levels for immediate response with
+                location-based notifications and resource allocation.
               </p>
             </CardContent>
           </Card>
@@ -62,8 +60,8 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Connect with healthcare providers, NGOs, essential services,
-                and specialized response teams.
+                Connect with healthcare providers, NGOs, essential services, and
+                specialized response teams.
               </p>
             </CardContent>
           </Card>
