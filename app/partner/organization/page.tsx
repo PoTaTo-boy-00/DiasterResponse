@@ -13,7 +13,7 @@ import { Organization } from '@/app/types';
 export default function OrganizationPage() {
   const [organization] = useState<Organization>({
     id: '1',
-    name: 'City General Hospital',
+    name: 'Jalpaiguri Superspeciality Hospital',
     type: 'healthcare',
     capabilities: ['Emergency Care', 'Trauma Center', 'Ambulance Service'],
     coverage: {
@@ -22,15 +22,15 @@ export default function OrganizationPage() {
     },
     status: 'active',
     contact: {
-      email: 'emergency@citygeneral.org',
-      phone: '+1-555-0123',
-      emergency: '+1-555-0911',
+      email: '',
+      phone: '3561 232 002',
+      emergency: '3561 232 002',
     },
-    address: '123 Medical Center Blvd, City, State 12345',
+    address: 'National Highway 31, Engineering College, Jalpaiguri - 735102',
     operatingHours: {
       start: '00:00',
-      end: '24:00',
-      timezone: 'America/New_York',
+      end: '23:59',
+      timezone: 'IST — India Standard Time',
     },
     resources: [],
     personnel: [],
