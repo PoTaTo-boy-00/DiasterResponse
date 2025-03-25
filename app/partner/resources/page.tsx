@@ -99,6 +99,43 @@ export default function ResourcesPage() {
     }
   };
 
+  useEffect(() => {
+    const channel = supabase
+      .channel("resources")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "resources" },
+        (payload) => {
+          setResources((prev) => [...prev, payload.new as Resource]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("requestresources")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "requestresources" },
+        (payload) => {
+          setRequestResources((prev) => [
+            ...prev,
+            payload.new as requestResources,
+          ]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

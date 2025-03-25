@@ -31,7 +31,7 @@ export default function PersonnelPage() {
   useEffect(() => {
     const testSupabaseConnection = async () => {
       const { data, error } = await supabase
-        .from("alerts")
+        .from("personnel")
         .select("*")
         .limit(1);
       if (error) {
@@ -45,7 +45,7 @@ export default function PersonnelPage() {
   }, []);
   useEffect(() => {
     const fetchMessages = async () => {
-      const { data, error } = await supabase.from("messages").select("*");
+      const { data, error } = await supabase.from("personnel").select("*");
       if (error) {
         console.error("Error fetching alerts:", error);
       } else {
@@ -58,7 +58,7 @@ export default function PersonnelPage() {
 
   const handleSendMessage = async (newPersonnel: Personnel) => {
     const { data, error } = await supabase
-      .from("messages")
+      .from("personnel")
       .insert([newPersonnel])
       .select();
     if (error) {
@@ -238,7 +238,7 @@ function MessageForm({ onSubmit }: MessageFormProps) {
         />
       </div>
 
-      <Button type="submit">Send Message</Button>
+      <Button type="submit">Add Personnel</Button>
     </form>
   );
 }

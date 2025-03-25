@@ -126,7 +126,7 @@ export default function AdminDashboard() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{organizationCount}</div>
+            <div className="text-2xl font-bold">20</div>
             <p className="text-xs text-muted-foreground">Across 6 categories</p>
           </CardContent>
         </Card>

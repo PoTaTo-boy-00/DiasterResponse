@@ -70,6 +70,43 @@ export default function ResourcesPage() {
     }
   };
 
+  useEffect(() => {
+    const channel = supabase
+      .channel("resources")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "resources" },
+        (payload) => {
+          setResources((prev) => [...prev, payload.new as Resource]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("requestresources")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "requestresources" },
+        (payload) => {
+          setRequestResources((prev) => [
+            ...prev,
+            payload.new as requestResources,
+          ]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -158,6 +195,7 @@ export default function ResourcesPage() {
                   </div>
                 )}
               </div>
+              <Button>Allocate Resources</Button>
             </CardContent>
           </Card>
         ))}
@@ -227,6 +265,12 @@ export default function ResourcesPage() {
                     <p className="font-medium">{resource.expiryDate}</p>
                   </div>
                 )}
+                <div>
+                  <p className="text-sm text-muted-foreground">Requested By</p>
+                  <p className="font-medium">
+                    Jalpaiguri Superspeciality Hospital
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -239,9 +283,6 @@ export default function ResourcesPage() {
 // Form component for adding a new resource
 interface ResourceFormProps {
   onSubmit: (resource: Resource) => void;
-}
-interface RequestResourceFormProps {
-  onSubmit: (resource: requestResources) => void;
 }
 
 function ResourceForm({ onSubmit }: ResourceFormProps) {
