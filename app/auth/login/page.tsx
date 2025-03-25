@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { User } from "@/app/types";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -28,6 +29,7 @@ export default function Login() {
     organizationType: "healthcare",
     organizationName: "",
   });
+  const [user, setUser] = useState<User[]>([]);
 
   const router = useRouter();
   const supabase = createClientComponentClient();
@@ -79,25 +81,53 @@ export default function Login() {
     setError(null);
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: registerData.email,
-        password: registerData.password,
-        options: {
-          data: {
-            name: registerData.name,
-            organization_type: registerData.organizationType,
-            organization_name: registerData.organizationName,
-            role: "partner",
+      //  Sign up the user with Supabase Auth
+      const { data: authData, error: signUpError } = await supabase.auth.signUp(
+        {
+          email: registerData.email,
+          password: registerData.password,
+          options: {
+            data: {
+              name: registerData.name,
+              organization_type: registerData.organizationType,
+              organization_name: registerData.organizationName,
+              role: "partner", // Default role for new users
+            },
           },
-        },
-      });
+        }
+      );
 
       if (signUpError) {
         setError(signUpError.message);
-      } else {
-        setIsRegisterOpen(false);
-        setError("Please check your email for verification");
+        return;
       }
+
+      //  Insert the user data into the `users` table
+      const newUser = {
+        id: authData.user?.id,
+        email: registerData.email,
+        password: registerData.password,
+        name: registerData.name,
+        organization_type: registerData.organizationType,
+        organization_name: registerData.organizationName,
+        role: "partner",
+      };
+
+      const { data, error: insertError } = await supabase
+        .from("users")
+        .insert([newUser])
+        .select();
+
+      if (insertError) {
+        setError(insertError.message);
+        return;
+      }
+
+      //  Update state and close the dialog
+      setUser((prev) => [...prev, data[0]]);
+      setIsRegisterOpen(false);
+      setError("Please check your email for verification");
+      router.push("/login"); // Redirect to login page after registration
     } catch (err) {
       setError("An unexpected error occurred during registration");
     }
@@ -109,8 +139,11 @@ export default function Login() {
         <CardHeader className="space-y-4 flex flex-col items-center">
           <Shield className="h-12 w-12 text-primary" />
           <CardTitle className="text-2xl font-bold text-center">
-            Sign in to Disaster Response Network
+            Sign in to{" "}
           </CardTitle>
+          <span className="text-4xl text-red-600 font-[emoji] tracking-[.12em] font-bold md:text-center ">
+            त्रyana
+          </span>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
