@@ -102,7 +102,6 @@ export default function Login() {
         return;
       }
 
-      //  Insert the user data into the `users` table
       const newUser = {
         id: authData.user?.id,
         email: registerData.email,
